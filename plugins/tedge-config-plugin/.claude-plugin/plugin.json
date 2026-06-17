@@ -1,0 +1,18 @@
+{
+  "name": "tedge-config-plugin",
+  "displayName": "thin-edge Config Plugin Builder",
+  "version": "1.0.0",
+  "description": "Write a new thin-edge.io configuration management plugin to extend tedge-agent's config management to a new config type or source, conforming to the list/get/prepare/set/verify/rollback contract.",
+  "author": {
+    "name": "thin-edge.io"
+  },
+  "homepage": "https://thin-edge.github.io/thin-edge.io/extend/config-management/",
+  "keywords": [
+    "thin-edge",
+    "tedge",
+    "config-management",
+    "iot",
+    "edge",
+    "plugin"
+  ]
+}
