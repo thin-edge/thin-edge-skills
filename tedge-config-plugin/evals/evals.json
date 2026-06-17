@@ -1,0 +1,59 @@
+{
+  "skill_name": "tedge-config-plugin",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I'm running thin-edge on a fleet of gateways that also run nginx as a reverse proxy. I want to be able to push nginx config updates from the cloud. Write me a tedge config plugin (shell is fine) that manages the main nginx config at /etc/nginx/nginx.conf. nginx can validate a config with `nginx -t` and you reload it with `systemctl reload nginx`. Call the config type `nginx`.",
+      "expected_output": "A POSIX shell config plugin implementing list/get/prepare/set/verify/rollback for type `nginx`. list prints `nginx`; get prints the effective config (cat /etc/nginx/nginx.conf or `nginx -T`); prepare validates with `nginx -t` on the candidate and backs up the current config to --work-dir; set installs the new file and reloads via systemctl; verify checks nginx is active; rollback restores the backup and reloads. Correct exit codes and stderr usage. Plus install + local test instructions.",
+      "files": [],
+      "assertions": [
+        "Implements all six config-plugin subcommands \u2014 list, get, prepare, set, verify, and rollback \u2014 dispatched from the plugin's command handler.",
+        "`list` prints the config type name `nginx` (one per line) and nothing else.",
+        "The prepare, set, verify, and rollback subcommands accept and use the `--work-dir <dir>` argument.",
+        "`prepare` only validates the candidate and backs up the current config into the work-dir \u2014 it does NOT apply the new config or restart any service.",
+        "`set` applies the new config and reloads nginx via systemctl, exiting non-zero (so the agent triggers rollback) if that fails.",
+        "`rollback` restores the backup that prepare saved in the work-dir and reloads/restarts the service.",
+        "On failure, subcommands write a message to stderr and exit non-zero; stdout is reserved for get/list output.",
+        "Provides install instructions (copy to /usr/share/tedge/config-plugins, make executable) and local test commands exercising the subcommands.",
+        "`prepare` validates the candidate nginx config using `nginx -t` before accepting it.",
+        "The service reload uses `systemctl reload nginx`."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "We deploy an internal app on our edge devices configured via an env file at /etc/acme-agent/agent.env (KEY=VALUE lines). The app runs as the systemd unit acme-agent.service. There's no real config validator for it, but the file must be parseable as key=value pairs. I'd like thin-edge to manage this `agent.env` config type so ops can update it remotely and have the service restart. Can you write the config plugin?",
+      "expected_output": "A config plugin (default shell) for type `agent.env`. get prints /etc/acme-agent/agent.env. prepare validates the candidate file parses as KEY=VALUE lines (since no native validator exists, a lightweight syntactic check is appropriate) and backs up the current env file to --work-dir. set moves the new file into place and `systemctl restart acme-agent`. verify checks the unit is active. rollback restores the backup and restarts. Handles the no-validator case sensibly rather than faking one. Includes install/test steps.",
+      "files": [],
+      "assertions": [
+        "Implements all six config-plugin subcommands \u2014 list, get, prepare, set, verify, and rollback \u2014 dispatched from the plugin's command handler.",
+        "`list` prints the config type name `agent.env` (one per line) and nothing else.",
+        "The prepare, set, verify, and rollback subcommands accept and use the `--work-dir <dir>` argument.",
+        "`prepare` only validates the candidate and backs up the current config into the work-dir \u2014 it does NOT apply the new config or restart any service.",
+        "`set` applies the new config and restarts the acme-agent service, exiting non-zero (so the agent triggers rollback) if that fails.",
+        "`rollback` restores the backup that prepare saved in the work-dir and reloads/restarts the service.",
+        "On failure, subcommands write a message to stderr and exit non-zero; stdout is reserved for get/list output.",
+        "Provides install instructions (copy to /usr/share/tedge/config-plugins, make executable) and local test commands exercising the subcommands.",
+        "Because acme-agent has no native validator, prepare validates the candidate by checking it parses as KEY=VALUE lines, rather than inventing/calling a non-existent validator.",
+        "`set` restarts the `acme-agent` systemd service after applying the new env file."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to extend thin-edge config management to handle my Mosquitto broker. The interesting part is the effective config is split across /etc/mosquitto/mosquitto.conf plus a bunch of fragment files in /etc/mosquitto/conf.d/*.conf, and when someone reads the config from the cloud I want them to see the combined effective configuration, not just the main file. Updates should replace the main mosquitto.conf and restart the mosquitto service. Write the plugin for a config type called `mosquitto`.",
+      "expected_output": "A config plugin for type `mosquitto` where get outputs the merged effective config (main file + conf.d/*.conf fragments concatenated, ideally with markers showing source), not just the main file. prepare backs up the main config (and accounts for restore), set replaces /etc/mosquitto/mosquitto.conf and restarts mosquitto, verify confirms the broker is running, rollback restores. Demonstrates the multi-fragment aggregation requirement of get. Includes install/test steps.",
+      "files": [],
+      "assertions": [
+        "Implements all six config-plugin subcommands \u2014 list, get, prepare, set, verify, and rollback \u2014 dispatched from the plugin's command handler.",
+        "`list` prints the config type name `mosquitto` (one per line) and nothing else.",
+        "The prepare, set, verify, and rollback subcommands accept and use the `--work-dir <dir>` argument.",
+        "`prepare` only validates the candidate and backs up the current config into the work-dir \u2014 it does NOT apply the new config or restart any service.",
+        "`set` applies the new config and restarts the mosquitto service, exiting non-zero (so the agent triggers rollback) if that fails.",
+        "`rollback` restores the backup that prepare saved in the work-dir and reloads/restarts the service.",
+        "On failure, subcommands write a message to stderr and exit non-zero; stdout is reserved for get/list output.",
+        "Provides install instructions (copy to /usr/share/tedge/config-plugins, make executable) and local test commands exercising the subcommands.",
+        "`get` outputs the combined effective configuration \u2014 the main /etc/mosquitto/mosquitto.conf plus the /etc/mosquitto/conf.d/*.conf fragments merged together \u2014 not just the main file.",
+        "`set` replaces the main mosquitto.conf and restarts the mosquitto service."
+      ]
+    }
+  ]
+}
