@@ -1,0 +1,7 @@
+# Skill eval run artifacts — generated, transient, machine-specific.
+# The reproducible eval suite lives in <skill>/evals/; a curated results
+# summary is committed as <skill>/evals/RESULTS.md instead.
+*-workspace/
+
+# OS / editor noise
+.DS_Store

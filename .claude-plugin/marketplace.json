@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "thin-edge-skills",
+  "owner": {
+    "name": "thin-edge.io",
+    "email": "info@thin-edge.io"
+  },
+  "description": "Official marketplace of Claude Code skills for thin-edge.io (tedge) development.",
+  "plugins": [
+    {
+      "name": "tedge-config-plugin",
+      "source": "./plugins/tedge-config-plugin",
+      "description": "Write a new thin-edge.io configuration management plugin to extend tedge-agent's config management to a new config type or source.",
+      "category": "config-management",
+      "tags": [
+        "thin-edge",
+        "tedge",
+        "config-management",
+        "iot",
+        "edge"
+      ]
+    }
+  ]
+}
